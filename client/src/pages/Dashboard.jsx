@@ -6,7 +6,7 @@ import DetectionCard from '../components/DetectionCard';
 import BinStatus from '../components/BinStatus';
 import ProcessingChamber from '../components/ProcessingChamber';
 import StatsPanel from '../components/StatsPanel';
-import { Wifi, WifiOff, Cpu } from 'lucide-react';
+import { Wifi, WifiOff, Cpu, Gift } from 'lucide-react';
 
 const Dashboard = () => {
   const { connected, detection, binStatus, systemStatus } = useSocket();
@@ -44,6 +44,14 @@ const Dashboard = () => {
                   </>
                 )}
               </div>
+
+              <button
+                onClick={() => window.location.href = '/redeem'}
+                className="bg-primary text-dark font-bold px-6 py-2 rounded-full hover:bg-primary/90 transition-colors flex items-center gap-2"
+              >
+                <Gift className="w-5 h-5" />
+                <span>Redeem Points</span>
+              </button>
 
               <motion.div
                 className="px-4 py-2 bg-primary/10 border border-primary rounded-full"

@@ -26,7 +26,30 @@ npm run dev
 ```
 Dashboard runs on http://localhost:5173
 
-### 3️⃣ Raspberry Pi (Terminal 3)
+Access the app at http://localhost:5173
+- Sign up/Login to create account
+- Dashboard: Main waste monitoring
+- Redeem Points: Submit bottles for credits
+- Store: Redeem credits for rewards
+
+### 3️⃣ MySQL Database (Required for Rewards)
+```bash
+# Start MySQL
+sudo systemctl start mysql
+
+# Create database (auto-creates on first run)
+# Or manually: mysql -u root -p < server/database_setup.sql
+```
+
+Configure in `server/.env`:
+```
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=your_password
+DB_NAME=smartbin_db
+```
+
+### 4️⃣ Raspberry Pi (Terminal 3)
 ```bash
 cd raspberry-pi
 pip install -r requirements.txt
@@ -68,6 +91,11 @@ smart-ai-bin/
 ✅ Bin fill monitoring
 ✅ Processing chamber logic
 ✅ Animated UI with stats
+✅ 🆕 User authentication & login
+✅ 🆕 Bottle submission rewards (100 credits/bottle)
+✅ 🆕 Webcam integration
+✅ 🆕 Redemption store with 12+ items
+✅ 🆕 MySQL database for user data
 
 ## 📊 Detection Logic
 

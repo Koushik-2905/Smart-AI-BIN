@@ -10,6 +10,10 @@ Edge AI-powered intelligent waste classification system with real-time monitorin
 - **Edge AI Processing** on Raspberry Pi
 - **Automated Sorting** with servo control
 - **Fill-level Monitoring** with ultrasonic sensors
+- **🆕 User Authentication** with JWT tokens
+- **🆕 Rewards System** - Earn credits by submitting bottles
+- **🆕 Redemption Store** - Redeem credits for rewards
+- **🆕 Webcam Integration** for bottle verification
 
 ## 🏗 Architecture
 

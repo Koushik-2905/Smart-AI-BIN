@@ -15,20 +15,20 @@ const LiveFeed = ({ detection }) => {
         />
       </div>
 
-<div className="relative bg-darker rounded-lg w-100 h-40 mx-auto flex items-center justify-center overflow-hidden">
+      <div className="relative bg-darker rounded-lg aspect-video flex items-center justify-center overflow-hidden">
         {detection ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             className="text-center"
           >
-            <Activity className="w-12 h-12 text-primary mx-auto mb-2" />
-            <p className="text-sm text-gray-400">Detection Active</p>
+            <Activity className="w-16 h-16 text-primary mx-auto mb-4" />
+            <p className="text-gray-400">Detection Active</p>
           </motion.div>
         ) : (
           <div className="text-center">
-            <Camera className="w-12 h-12 text-gray-700 mx-auto mb-2" />
-            <p className="text-sm text-gray-500">Waiting for object...</p>
+            <Camera className="w-16 h-16 text-gray-700 mx-auto mb-4" />
+            <p className="text-gray-500">Waiting for object...</p>
           </div>
         )}
 

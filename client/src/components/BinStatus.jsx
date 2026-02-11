@@ -4,9 +4,9 @@ import { Trash2, AlertTriangle } from 'lucide-react';
 
 const BinStatus = ({ binStatus, destination }) => {
   const bins = [
-    { name: 'Dry-Waste', type: 'dry', color: 'bg-blue-400', icon: '🗑️' },
-    { name: 'Wet-Waste', type: 'wet', color: 'bg-green-500', icon: '🥬' },
-    { name: 'E-Waste', type: 'electronic', color: 'bg-orange-500', icon: '⚡' }
+    { name: 'Dry Waste', type: 'dry', color: 'bg-blue-400', icon: '🗑️' },
+    { name: 'Wet Waste', type: 'wet', color: 'bg-green-500', icon: '🥬' },
+    { name: 'Electronic', type: 'electronic', color: 'bg-orange-500', icon: '⚡' }
   ];
 
   const getFillLevel = (type) => {
@@ -37,30 +37,27 @@ const BinStatus = ({ binStatus, destination }) => {
                 borderColor: isDestination ? '#00ff88' : '#1f2937'
               }}
               transition={{ delay: index * 0.1 }}
-              className={`p-3 rounded-lg border-2 ${
+              className={`p-4 rounded-lg border-2 ${
                 isDestination ? 'bg-primary/10' : 'bg-darker'
               }`}
             >
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xl">{bin.icon}</span>
-                  <div>
-                    <span className="text-white font-medium text-[0.8700rem] block leading-tight">
-{bin.name}</span>
-                  </div>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">{bin.icon}</span>
+                  <span className="text-white font-medium">{bin.name}</span>
                 </div>
-                {isFull && <AlertTriangle className="w-3.5 h-3.5 text-red-500" />}
+                {isFull && <AlertTriangle className="w-4 h-4 text-red-500" />}
               </div>
 
-              <div className="space-y-1.5">
-                <div className="flex justify-between items-center text-xs">
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
                   <span className="text-gray-400">Fill Level</span>
                   <span className={`font-medium ${isFull ? 'text-red-500' : 'text-gray-300'}`}>
                     {fillLevel.toFixed(0)}%
                   </span>
                 </div>
 
-                <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
                   <motion.div
                     className={`h-full ${isFull ? 'bg-red-500' : bin.color}`}
                     initial={{ width: 0 }}
@@ -74,9 +71,9 @@ const BinStatus = ({ binStatus, destination }) => {
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="mt-2 text-xs text-primary font-medium"
+                  className="mt-3 text-xs text-primary font-medium"
                 >
-                  ← Active
+                  ← Current Destination
                 </motion.div>
               )}
             </motion.div>
