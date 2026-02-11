@@ -1,0 +1,10 @@
+names:
+  0: dry
+  1: wet
+  2: electronic
+
+nc: 3
+
+train: ../dataset/train/images
+val: ../dataset/val/images
+test: ../dataset/test/images
