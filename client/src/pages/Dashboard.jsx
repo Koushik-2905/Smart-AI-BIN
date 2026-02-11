@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useSocket } from '../context/SocketContext';
 import LiveFeed from '../components/LiveFeed';
@@ -6,7 +6,91 @@ import DetectionCard from '../components/DetectionCard';
 import BinStatus from '../components/BinStatus';
 import ProcessingChamber from '../components/ProcessingChamber';
 import StatsPanel from '../components/StatsPanel';
+import { adminAPI } from '../utils/api';
 import { Wifi, WifiOff, Cpu, Gift } from 'lucide-react';
+
+const RewardsSummary = () => {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let isMounted = true;
+
+    adminAPI
+      .getUsersSummary()
+      .then((res) => {
+        if (!isMounted) return;
+        setUsers(res.data.users || []);
+      })
+      .catch((err) => {
+        if (!isMounted) return;
+        console.error('Failed to load rewards summary', err);
+        setError('Failed to load rewards summary');
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="mt-8 p-4 bg-card border border-gray-800 rounded-xl"
+    >
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-lg font-semibold text-white">Rewards Overview</h2>
+          <p className="text-xs text-gray-400">
+            Users, trash events, and total reward points
+          </p>
+        </div>
+      </div>
+
+      {loading ? (
+        <p className="text-sm text-gray-400">Loading rewards data...</p>
+      ) : error ? (
+        <p className="text-sm text-red-400">{error}</p>
+      ) : users.length === 0 ? (
+        <p className="text-sm text-gray-400">No users have earned rewards yet.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-xs md:text-sm">
+            <thead className="text-gray-400 border-b border-gray-800">
+              <tr>
+                <th className="text-left py-2 pr-4">User</th>
+                <th className="text-left py-2 pr-4">Email</th>
+                <th className="text-right py-2 pr-4">Trash Events</th>
+                <th className="text-right py-2">Total Points</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((u) => (
+                <tr key={u.id} className="border-b border-gray-900">
+                  <td className="py-2 pr-4 text-white">{u.name}</td>
+                  <td className="py-2 pr-4 text-gray-400 truncate max-w-[180px]">
+                    {u.email}
+                  </td>
+                  <td className="py-2 pr-4 text-right text-gray-200">
+                    {u.bottles_submitted}
+                  </td>
+                  <td className="py-2 text-right text-emerald-400 font-semibold">
+                    {u.credits}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </motion.div>
+  );
+};
 
 const Dashboard = () => {
   const { connected, detection, binStatus, systemStatus } = useSocket();
@@ -103,6 +187,9 @@ const Dashboard = () => {
             </div>
           </motion.div>
         )}
+
+        {/* Rewards / Users Summary */}
+        <RewardsSummary />
       </main>
 
       {/* Footer */}

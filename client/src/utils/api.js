@@ -45,6 +45,10 @@ export const rewardsAPI = {
   getBottleHistory: () => api.get('/rewards/bottle-history'),
 };
 
+export const adminAPI = {
+  getUsersSummary: () => api.get('/admin/users-summary'),
+};
+
 export const statsAPI = {
   getStats: () => api.get('/stats'),
   getHistory: (limit = 10) => api.get(`/history?limit=${limit}`),

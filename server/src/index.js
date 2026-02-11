@@ -11,6 +11,7 @@ const detectionController = require('./controllers/detectionController');
 const apiRoutes = require('./routes/api');
 const authRoutes = require('./routes/auth');
 const rewardsRoutes = require('./routes/rewards');
+const adminRoutes = require('./routes/admin');
 const mqttConfig = require('./config/mqtt');
 const { initDatabase } = require('./database/init');
 
@@ -30,6 +31,7 @@ app.use(morgan('dev'));
 app.use('/api', apiRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/rewards', rewardsRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {
