@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+// Use relative /api when VITE_API_URL not set (proxied through Vite for ngrok/single-tunnel)
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -40,6 +41,9 @@ export const authAPI = {
 
 export const rewardsAPI = {
   submitBottle: () => api.post('/rewards/submit-bottle'),
+  checkIn: () => api.post('/rewards/check-in'),
+  checkOut: () => api.post('/rewards/check-out'),
+  getCheckInStatus: () => api.get('/rewards/check-in-status'),
   redeemItem: (data) => api.post('/rewards/redeem', data),
   getRedemptionHistory: () => api.get('/rewards/redemption-history'),
   getBottleHistory: () => api.get('/rewards/bottle-history'),

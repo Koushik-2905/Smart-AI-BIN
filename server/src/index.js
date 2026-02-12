@@ -8,6 +8,8 @@ const cookieParser = require('cookie-parser');
 const mqttService = require('./services/mqttService');
 const socketService = require('./services/socketService');
 const detectionController = require('./controllers/detectionController');
+const rewardsController = require('./controllers/rewardsController');
+const activeUserStore = require('./services/activeUserStore');
 const apiRoutes = require('./routes/api');
 const authRoutes = require('./routes/auth');
 const rewardsRoutes = require('./routes/rewards');
@@ -51,7 +53,7 @@ app.get('/', (req, res) => {
 socketService.initialize(server);
 
 // Setup MQTT message handlers
-mqttService.onMessage(mqttConfig.topics.detection, (data) => {
+mqttService.onMessage(mqttConfig.topics.detection, async (data) => {
   console.log('Detection received:', data);
   
   // Process detection
@@ -59,6 +61,25 @@ mqttService.onMessage(mqttConfig.topics.detection, (data) => {
   
   // Emit to connected clients
   socketService.emitDetectionUpdate(data);
+  
+  // Auto-credit points when plastic or e-waste is segregated
+  const activeUserId = activeUserStore.getActiveUser();
+  if (activeUserId) {
+    const wasteType = data.destination || data.objects?.[0]?.class || data.label;
+    const isReject = (data.destination === 'reject' || (data.confidence !== undefined && data.confidence < 0.65));
+    const isEligible = wasteType === 'dry' || wasteType === 'electronic';
+    if (isEligible && !isReject) {
+      try {
+        const updated = await rewardsController.creditFromBin(activeUserId, wasteType);
+        if (updated) {
+          console.log(`Credited user ${activeUserId}: ${wasteType} (+${wasteType === 'dry' ? 5 : 10} pts)`);
+          socketService.emitCreditUpdate({ user_id: activeUserId, waste_type: wasteType, credits: updated.credits });
+        }
+      } catch (err) {
+        console.error('Auto-credit from bin failed:', err);
+      }
+    }
+  }
 });
 
 mqttService.onMessage(mqttConfig.topics.binStatus, (data) => {

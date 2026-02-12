@@ -67,6 +67,12 @@ class SocketService {
       this.io.emit('alert', data);
     }
   }
+
+  emitCreditUpdate(data) {
+    if (this.io) {
+      this.io.emit('creditUpdate', data);
+    }
+  }
   
   getConnectedClientsCount() {
     return this.connectedClients.size;

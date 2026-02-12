@@ -1,6 +1,67 @@
 const pool = require('../database/connection');
+const activeUserStore = require('../services/activeUserStore');
+
+// Points per waste type: dry (plastic) = 5, electronic = 10, wet = 0
+const POINTS_BY_WASTE_TYPE = {
+  dry: 5,
+  electronic: 10,
+  wet: 0,
+};
 
 class RewardsController {
+  // Credit user when bin segregates plastic or e-waste (called from MQTT handler)
+  async creditFromBin(userId, wasteType) {
+    const credits = POINTS_BY_WASTE_TYPE[wasteType];
+    if (!credits || credits <= 0) return null;
+
+    const connection = await pool.getConnection();
+    try {
+      await connection.beginTransaction();
+
+      await connection.query(
+        'INSERT INTO bottle_submissions (user_id, credits_earned) VALUES (?, ?)',
+        [userId, credits]
+      );
+
+      await connection.query(
+        'UPDATE users SET credits = credits + ?, bottles_submitted = bottles_submitted + 1, total_earned = total_earned + ? WHERE id = ?',
+        [credits, credits, userId]
+      );
+
+      const [users] = await connection.query(
+        'SELECT credits, bottles_submitted, total_earned FROM users WHERE id = ?',
+        [userId]
+      );
+
+      await connection.commit();
+      return users[0];
+    } catch (error) {
+      await connection.rollback();
+      console.error('Credit from bin error:', error);
+      return null;
+    } finally {
+      connection.release();
+    }
+  }
+
+  // Check in: set this user as active for bin disposals
+  checkIn(req, res) {
+    activeUserStore.setActiveUser(req.user.id);
+    res.json({ success: true, message: "You're checked in. Dispose plastic or e-waste to earn points!" });
+  }
+
+  // Check out: clear active user
+  checkOut(req, res) {
+    activeUserStore.clearActiveUser();
+    res.json({ success: true, message: 'Checked out.' });
+  }
+
+  // Get check-in status for current user
+  getCheckInStatus(req, res) {
+    const checkedIn = activeUserStore.isActiveUser(req.user.id);
+    res.json({ success: true, checked_in: checkedIn });
+  }
+
   // Submit bottle and earn credits
   async submitBottle(req, res) {
     const connection = await pool.getConnection();

@@ -19,8 +19,9 @@ export const SocketProvider = ({ children }) => {
   const [systemStatus, setSystemStatus] = useState(null);
 
   useEffect(() => {
-    const serverUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
-    const newSocket = io(serverUrl);
+    // Use same origin when VITE_SERVER_URL not set (proxied for ngrok/single-tunnel)
+    const serverUrl = import.meta.env.VITE_SERVER_URL || '';
+    const newSocket = io(serverUrl, { path: '/socket.io' });
 
     newSocket.on('connect', () => {
       console.log('Connected to server');
