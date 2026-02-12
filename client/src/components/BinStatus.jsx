@@ -4,9 +4,9 @@ import { Trash2, AlertTriangle } from 'lucide-react';
 
 const BinStatus = ({ binStatus, destination }) => {
   const bins = [
-    { name: 'Dry Waste', type: 'dry', color: 'bg-blue-400', icon: '🗑️' },
-    { name: 'Wet Waste', type: 'wet', color: 'bg-green-500', icon: '🥬' },
-    { name: 'Electronic', type: 'electronic', color: 'bg-orange-500', icon: '⚡' }
+    { name: 'Dry-Waste', type: 'dry', color: 'bg-blue-400', icon: '🗑️' },
+    { name: 'Wet-Waste', type: 'wet', color: 'bg-green-500', icon: '🥬' },
+    { name: 'E-waste', type: 'electronic', color: 'bg-orange-500', icon: '⚡' }
   ];
 
   const getFillLevel = (type) => {
@@ -42,12 +42,15 @@ const BinStatus = ({ binStatus, destination }) => {
               }`}
             >
               <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">{bin.icon}</span>
-                  <span className="text-white font-medium">{bin.name}</span>
-                </div>
-                {isFull && <AlertTriangle className="w-4 h-4 text-red-500" />}
-              </div>
+  <div className="flex items-center gap-2">
+    <span className="text-2xl">{bin.icon}</span>
+    <span className="text-[13px] text-white font-medium break-words">
+      {bin.name}
+    </span>
+  </div>
+  {isFull && <AlertTriangle className="w-4 h-4 text-red-500" />}
+</div>
+
 
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">

@@ -15,8 +15,8 @@ const LiveFeed = ({ detection }) => {
         />
       </div>
 
-      <div className="relative bg-darker rounded-lg aspect-video flex items-center justify-center overflow-hidden">
-        {detection ? (
+      <div className="relative bg-darker rounded-lg aspect-video w-[75%] mx-auto flex items-center justify-center overflow-hidden">
+      {detection ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
