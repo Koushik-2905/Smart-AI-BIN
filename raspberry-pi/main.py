@@ -11,9 +11,10 @@ from threading import Thread
 
 from config import get_config
 from detection.yolo_model import WasteDetector
+from detection.tflite_model import TFLiteWasteClassifier
 from detection.inference import InferencePipeline
 from detection.preprocessing import preprocess_for_inference
-from hardware.servo_control import ServoController
+from hardware.servo_control import BinServoController
 from hardware.ultrasonic import MultiBinMonitor
 from hardware.ir_sensor import IRSensor
 from hardware.gpio_setup import GPIOConfig
@@ -41,18 +42,34 @@ class SmartBinSystem:
         GPIOConfig.initialize()
         GPIOConfig.setup_leds()
         
-        # Initialize components
-        self.detector = WasteDetector(
-            model_path=config.MODEL_PATH,
-            conf_threshold=config.CONFIDENCE_THRESHOLD
-        )
+        # Initialize detector (YOLO or TFLite)
+        if getattr(config, "DETECTOR_TYPE", "tflite") == "yolo":
+            logger.info("Detector: YOLO")
+            self.detector = WasteDetector(
+                model_path=config.MODEL_PATH,
+                conf_threshold=config.CONFIDENCE_THRESHOLD
+            )
+        else:
+            logger.info("Detector: TFLite")
+            self.detector = TFLiteWasteClassifier(
+                model_path=config.TFLITE_MODEL_PATH,
+                labels_path=config.TFLITE_LABELS_PATH,
+                input_size=config.TFLITE_INPUT_SIZE,
+                conf_threshold=config.CONFIDENCE_THRESHOLD
+            )
         
         self.camera = InferencePipeline(
             camera_id=config.CAMERA_ID,
             resolution=config.CAMERA_RESOLUTION
         )
         
-        self.servo = ServoController(pin=GPIOConfig.SERVO_PIN)
+        # Multi-servo setup: one motor per bin door
+        self.servo = BinServoController(
+            dry_pin=GPIOConfig.SERVO_DRY_PIN,
+            wet_pin=GPIOConfig.SERVO_WET_PIN,
+            electronic_pin=GPIOConfig.SERVO_ELECTRONIC_PIN,
+            unknown_pin=GPIOConfig.SERVO_UNKNOWN_PIN,
+        )
         
         self.bin_monitor = MultiBinMonitor(GPIOConfig.get_bin_sensors())
         
@@ -105,7 +122,7 @@ class SmartBinSystem:
                 frame = preprocess_for_inference(frame, resize=True, enhance=True)
             
             # Run detection
-            logger.info("Running YOLO detection")
+            logger.info("Running waste detection")
             detections = self.detector.detect(frame)
             
             # Get detection summary

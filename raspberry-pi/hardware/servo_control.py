@@ -11,9 +11,9 @@ logger = logging.getLogger(__name__)
 
 
 class ServoController:
-    """Controls servo motor for bin selection"""
+    """Controls a single servo motor (for a single door/bin)"""
     
-    def __init__(self, pin: int = 18, frequency: int = 50):
+    def __init__(self, pin: int, frequency: int = 50):
         """
         Initialize servo controller
         
@@ -24,7 +24,7 @@ class ServoController:
         self.pin = pin
         self.frequency = frequency
         self.pwm = None
-        self.current_angle = 90  # Start at center
+        self.current_angle = 0  # Start closed
         
         self._setup_gpio()
     
@@ -67,7 +67,7 @@ class ServoController:
             logger.warning(f"Invalid angle {angle}, clamping to 0-180")
             angle = max(0, min(180, angle))
         
-        logger.info(f"Rotating servo from {self.current_angle}° to {angle}°")
+        logger.info(f"Rotating servo on pin {self.pin} from {self.current_angle}° to {angle}°")
         
         # Smooth rotation
         step = 2 if angle > self.current_angle else -2
@@ -87,40 +87,94 @@ class ServoController:
         # Stop PWM signal to prevent jitter
         self.pwm.ChangeDutyCycle(0)
     
-    def rotate_to_bin(self, bin_type: str):
-        """
-        Rotate to predefined bin position
-        
-        Args:
-            bin_type: Type of bin (dry/wet/electronic/processing)
-        """
-        bin_angles = {
-            'dry': 60,
-            'wet': 120,
-            'electronic': 180,
-            'processing': 0
-        }
-        
-        angle = bin_angles.get(bin_type)
-        if angle is None:
-            logger.warning(f"Unknown bin type: {bin_type}")
-            return
-        
-        logger.info(f"Routing to {bin_type} bin")
-        self.rotate_to(angle)
-    
-    def reset(self):
-        """Reset servo to center position"""
-        logger.info("Resetting servo to center")
-        self.rotate_to(90)
-    
     def cleanup(self):
         """Cleanup GPIO resources"""
         if self.pwm:
             self.pwm.stop()
         GPIO.cleanup()
-        logger.info("Servo cleanup complete")
+        logger.info(f"Servo cleanup complete on pin {self.pin}")
     
     def __del__(self):
         """Cleanup on deletion"""
-        self.cleanup()
+        try:
+            self.cleanup()
+        except Exception:
+            pass
+
+
+class BinServoController:
+    """
+    Controls four separate servos, one per bin door:
+    - dry
+    - wet
+    - electronic
+    - unknown / multiple / reject
+    """
+    
+    def __init__(
+        self,
+        dry_pin: int,
+        wet_pin: int,
+        electronic_pin: int,
+        unknown_pin: int,
+        frequency: int = 50,
+    ):
+        self.dry = ServoController(pin=dry_pin, frequency=frequency)
+        self.wet = ServoController(pin=wet_pin, frequency=frequency)
+        self.electronic = ServoController(pin=electronic_pin, frequency=frequency)
+        self.unknown = ServoController(pin=unknown_pin, frequency=frequency)
+        
+        # Simple open/close angles; you can calibrate these per door
+        self.closed_angle = 0
+        self.open_angle = 90
+        
+        # Ensure all doors start closed
+        self._close_all()
+    
+    def _close_all(self):
+        for servo in (self.dry, self.wet, self.electronic, self.unknown):
+            try:
+                servo.rotate_to(self.closed_angle)
+            except Exception as e:
+                logger.warning(f"Failed to close servo: {e}")
+    
+    def route_to_bin(self, bin_type: str):
+        """
+        Open only the door for the given bin type.
+        
+        Args:
+            bin_type: 'dry' | 'wet' | 'electronic' | 'reject' | 'processing'
+        """
+        logger.info(f"Routing to bin (multi-servo): {bin_type}")
+        # Close all doors
+        self._close_all()
+        
+        # Open the appropriate door
+        target = None
+        if bin_type == 'dry':
+            target = self.dry
+        elif bin_type == 'wet':
+            target = self.wet
+        elif bin_type == 'electronic':
+            target = self.electronic
+        else:
+            # reject, processing, unknown, multi-object
+            target = self.unknown
+        
+        try:
+            target.rotate_to(self.open_angle)
+        except Exception as e:
+            logger.error(f"Failed to open door for {bin_type}: {e}")
+    
+    def reset(self):
+        """Close all doors."""
+        logger.info("Resetting all bin doors (close)")
+        self._close_all()
+    
+    def cleanup(self):
+        """Cleanup all servos."""
+        for servo in (self.dry, self.wet, self.electronic, self.unknown):
+            try:
+                servo.cleanup()
+            except Exception:
+                pass

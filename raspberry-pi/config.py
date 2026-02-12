@@ -14,9 +14,21 @@ class Config:
     MQTT_PORT = int(os.getenv('MQTT_PORT', 1883))
     MQTT_CLIENT_ID = os.getenv('MQTT_CLIENT_ID', 'smartbin_pi_001')
     
-    # YOLO Model settings
+    # Detector selection
+    # - yolo: Ultralytics YOLOv8 (heavier)
+    # - tflite: Teachable Machine TFLite classifier (lightweight, recommended for Pi 4GB)
+    DETECTOR_TYPE = os.getenv('DETECTOR_TYPE', 'tflite').lower()
+
+    # Model settings (YOLO)
     MODEL_PATH = os.getenv('MODEL_PATH', '../models/yolo-waste.pt')
-    CONFIDENCE_THRESHOLD = float(os.getenv('CONF_THRESHOLD', 0.5))
+
+    # Model settings (TFLite)
+    TFLITE_MODEL_PATH = os.getenv('TFLITE_MODEL_PATH', '../models/model.tflite')
+    TFLITE_LABELS_PATH = os.getenv('TFLITE_LABELS_PATH', '../models/labels.txt')
+    TFLITE_INPUT_SIZE = (224, 224)
+
+    # Confidence threshold used for routing to reject
+    CONFIDENCE_THRESHOLD = float(os.getenv('CONF_THRESHOLD', 0.65))
     
     # Camera settings
     CAMERA_ID = int(os.getenv('CAMERA_ID', 0))

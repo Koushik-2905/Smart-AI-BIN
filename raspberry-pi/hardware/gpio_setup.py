@@ -13,7 +13,11 @@ class GPIOConfig:
     """Central GPIO configuration manager"""
     
     # Pin definitions (BCM mode)
-    SERVO_PIN = 18
+    # Separate servo pins for each bin door
+    SERVO_DRY_PIN = 5
+    SERVO_WET_PIN = 6
+    SERVO_ELECTRONIC_PIN = 12
+    SERVO_UNKNOWN_PIN = 13
     
     # IR sensor
     IR_SENSOR_PIN = 17
